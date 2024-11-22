@@ -158,12 +158,14 @@ function App() {
             ) : (
               <>
                 <Markdown className="markdown">{result}</Markdown>
-                <button
-                  onClick={copyToClipboard}
-                  className="absolute top-4 right-4 bg-green-600 hover:bg-green-700 text-white py-2 px-4 rounded-md"
-                >
-                  結果をコピー
-                </button>
+                {result && (
+                  <button
+                    onClick={copyToClipboard}
+                    className="absolute top-4 right-4 bg-green-600 hover:bg-green-700 text-white py-2 px-4 rounded-md"
+                  >
+                    結果をコピー
+                  </button>
+                )}
               </>
             )}
           </div>
