@@ -3,33 +3,23 @@ import openai from "./lib/openai";
 import Markdown from "react-markdown";
 
 // 精度をあげるためのプロンプト
-const prompt = `
+const instruction = `
 #命令文
 
 あなたは様々なジャンルの歌詞を手掛けている有名な作詞家です。
 
 以下の#条件に従って歌詞を作成してください。
+`;
 
+const conditions = `
 #条件
 
 ・出力は下記に示す#出力 の通りに生成する。
 
 ・歌詞は下記に示す#入力 の通りに生成する。
+`;
 
-#入力
-
-・ジャンル：ワークアウト、EDM、BGM
-
-・ターゲット層：全年代
-
-・曲及び歌詞の雰囲気：激しめ、ノリが良い
-
-・歌詞の内容：筋トレが捗るような曲調
-
-・言語：英語
-
-・歌詞に含めて欲しい単語
-
+const outputFormat = `
 #出力
 【タイトル】
 
@@ -62,13 +52,16 @@ function App() {
   const [result, setResult] = useState("");
   const [isLoading, setIsLoading] = useState(false);
 
-  // レビューボタンを押した処理
+  // 作成ボタンを押した処理
   const review = async () => {
     setIsLoading(true);
     const messages = [
       {
         role: "user",
-        content: `${prompt}
+        content: `${instruction}
+        ${conditions}
+        ${outputFormat}
+        #入力
         ・ジャンル：${genre}
         ・ターゲット層：${target}
         ・曲及び歌詞の雰囲気：${mood}
@@ -81,6 +74,13 @@ function App() {
     const result = await openai.completion(messages);
     setResult(result);
     setIsLoading(false);
+  };
+
+  // 結果をクリップボードにコピーする関数
+  const copyToClipboard = () => {
+    navigator.clipboard.writeText(result).then(() => {
+      alert("結果がクリップボードにコピーされました！");
+    });
   };
 
   return (
@@ -152,11 +152,19 @@ function App() {
           </button>
         </div>
         <div className="flex flex-col w-1/2 h-full items-center justify-center">
-          <div className="p-4 overflow-y-auto w-full">
+          <div className="p-4 overflow-y-auto w-full relative">
             {isLoading ? (
-              "レビュー中..."
+              "作成中..."
             ) : (
-              <Markdown className="markdown">{result}</Markdown>
+              <>
+                <Markdown className="markdown">{result}</Markdown>
+                <button
+                  onClick={copyToClipboard}
+                  className="absolute top-4 right-4 bg-green-600 hover:bg-green-700 text-white py-2 px-4 rounded-md"
+                >
+                  結果をコピー
+                </button>
+              </>
             )}
           </div>
         </div>
