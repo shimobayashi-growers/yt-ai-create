@@ -1,6 +1,7 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import openai from "./lib/openai";
 import Markdown from "react-markdown";
+import Cookies from "js-cookie";
 
 // 精度をあげるためのプロンプト
 const instruction = `
@@ -51,16 +52,21 @@ function App() {
   const [language, setLanguage] = useState("英語"); // 言語のデフォルト値
   const [result, setResult] = useState("");
   const [isLoading, setIsLoading] = useState(false);
+  const [logs, setLogs] = useState([]);
+  const [isOpen, setIsOpen] = useState([]);
+
+  useEffect(() => {
+    // Cookieからログを取得
+    const savedLogs = Cookies.get("lyricsLogs");
+    if (savedLogs) {
+      setLogs(JSON.parse(savedLogs));
+    }
+  }, []);
 
   // 作成ボタンを押した処理
   const review = async () => {
     setIsLoading(true);
-    const messages = [
-      {
-        role: "user",
-        content: `${instruction}
-        ${conditions}
-        ${outputFormat}
+    const inputFormat = `
         #入力
         ・ジャンル：${genre}
         ・ターゲット層：${target}
@@ -68,18 +74,49 @@ function App() {
         ・歌詞の内容：${lyricsContent}
         ・歌詞に含めて欲しい単語：${keywords}
         ・言語：${language}
-        ${content}`,
+        ${content}`;
+
+    const messages = [
+      {
+        role: "user",
+        content: `${instruction}
+        ${conditions}
+        ${outputFormat}
+        ${inputFormat}`,
       },
     ];
     const result = await openai.completion(messages);
     setResult(result);
     setIsLoading(false);
+
+    // 入力と出力をログに追加
+    const timestamp = new Date().toLocaleString("ja-JP", {
+      timeZone: "Asia/Tokyo",
+    });
+    const newLog = {
+      timestamp,
+      input: inputFormat,
+      output: result,
+    };
+    const updatedLogs = [...logs, newLog].sort(
+      (a, b) => new Date(b.timestamp) - new Date(a.timestamp)
+    ); // 降順にソート
+    setLogs(updatedLogs);
+    Cookies.set("lyricsLogs", JSON.stringify(updatedLogs)); // Cookieに保存
   };
 
   // 結果をクリップボードにコピーする関数
   const copyToClipboard = () => {
     navigator.clipboard.writeText(result).then(() => {
       alert("結果がクリップボードにコピーされました！");
+    });
+  };
+
+  const toggleAccordion = (index) => {
+    setIsOpen((prevIsOpen) => {
+      const newIsOpen = [...prevIsOpen];
+      newIsOpen[index] = !newIsOpen[index];
+      return newIsOpen;
     });
   };
 
@@ -169,6 +206,43 @@ function App() {
               </>
             )}
           </div>
+        </div>
+      </main>
+      <main className="flex w-full max-w-5xl bg-white rounded-lg shadow-xl mt-4 p-4">
+        <h2 className="text-lg font-bold text-blue-900">Log</h2>
+        <div className="overflow-x-auto">
+          <table className="min-w-full">
+            <thead>
+              <tr>
+                <th className="px-4 py-2">Timestamp</th>
+                <th className="px-4 py-2">入力</th>
+                <th className="px-4 py-2">出力</th>
+              </tr>
+            </thead>
+            <tbody>
+              {logs.map((log, index) => (
+                <tr key={index}>
+                  <td className="border px-4 py-2">{log.timestamp}</td>
+                  <td className="border px-4 py-2">
+                    {log.input.length > 50
+                      ? `${log.input.slice(0, 50)}...`
+                      : log.input}
+                    <button onClick={() => toggleAccordion(index)}>詳細</button>
+                    {isOpen[index] && <div>{log.input}</div>}{" "}
+                    {/* アコーディオン表示 */}
+                  </td>
+                  <td className="border px-4 py-2">
+                    {log.output.length > 50
+                      ? `${log.output.slice(0, 50)}...`
+                      : log.output}
+                    <button onClick={() => toggleAccordion(index)}>詳細</button>
+                    {isOpen[index] && <div>{log.output}</div>}{" "}
+                    {/* アコーディオン表示 */}
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
         </div>
       </main>
     </div>
