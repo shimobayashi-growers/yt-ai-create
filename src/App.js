@@ -130,12 +130,20 @@ function App() {
         <div className="flex flex-col w-1/2 h-full bg-gray-900 p-4 overflow-y-auto">
           <div className="flex-1 text-white">
             <label className="mt-2 text-green-300">ジャンル</label>
-            <input
-              type="text"
-              value={genre} // デフォルト値を設定
-              onChange={(e) => setGenre(e.target.value)}
-              className="mt-1 p-2 w-full bg-transparent text-white border-b border-white"
-            />
+            <div className="flex items-center">
+              <input
+                type="text"
+                value={genre} // デフォルト値を設定
+                onChange={(e) => setGenre(e.target.value)}
+                className="mt-1 p-2 w-full bg-transparent text-white border-b border-white"
+              />
+              <button
+                onClick={() => navigator.clipboard.writeText(genre)}
+                className="ml-2 bg-green-600 hover:bg-green-700 text-white py-1 px-2 rounded-md whitespace-nowrap"
+              >
+                コピー
+              </button>
+            </div>
             <label className="mt-4 text-green-300">ターゲット層</label>
             <input
               type="text"
