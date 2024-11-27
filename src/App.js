@@ -22,6 +22,7 @@ const conditions = `
 
 const outputFormat = `
 #出力
+
 【タイトル】
 
 【歌詞】
@@ -98,9 +99,7 @@ function App() {
       input: inputFormat,
       output: result,
     };
-    const updatedLogs = [...logs, newLog].sort(
-      (a, b) => new Date(b.timestamp) - new Date(a.timestamp)
-    ); // 降順にソート
+    const updatedLogs = [...logs, newLog];
     setLogs(updatedLogs);
     Cookies.set("lyricsLogs", JSON.stringify(updatedLogs)); // Cookieに保存
   };
@@ -194,14 +193,63 @@ function App() {
               "作成中..."
             ) : (
               <>
-                <Markdown className="markdown">{result}</Markdown>
                 {result && (
-                  <button
-                    onClick={copyToClipboard}
-                    className="absolute top-4 right-4 bg-green-600 hover:bg-green-700 text-white py-2 px-4 rounded-md"
-                  >
-                    結果をコピー
-                  </button>
+                  <>
+                    <div className="flex flex-col">
+                      <div className="flex justify-between items-center">
+                        <h3 className="text-lg font-bold ">【タイトル】</h3>
+                        <button
+                          onClick={() =>
+                            navigator.clipboard.writeText(
+                              result
+                                .split(/【歌詞】/)[0]
+                                ?.replace(/【タイトル】|【Title】/, "") || ""
+                            )
+                          }
+                          className="bg-green-600 hover:bg-green-700 text-white py-1 px-2 rounded-md"
+                        >
+                          タイトルをコピー
+                        </button>
+                      </div>
+                      <p
+                        className="w-full bg-transparent border-b border-black"
+                        dangerouslySetInnerHTML={{
+                          __html:
+                            result
+                              .split(/【歌詞】/)[0]
+                              ?.replace(/【タイトル】|【Title】/, "")
+                              .replace(/\n/g, "<br />") || "",
+                        }}
+                      />
+                    </div>
+                    <div className="flex flex-col mt-4">
+                      <div className="flex justify-between items-center">
+                        <h3 className="text-lg font-bold">【歌詞】</h3>
+                        <button
+                          onClick={() =>
+                            navigator.clipboard.writeText(
+                              result
+                                .split(/【歌詞】/)[1]
+                                ?.replace(/【歌詞】|【Lyrics】/, "")
+                            )
+                          }
+                          className="bg-green-600 hover:bg-green-700 text-white py-1 px-2 rounded-md"
+                        >
+                          歌詞をコピー
+                        </button>
+                      </div>
+                      <p
+                        className="mt-1 p-2 w-full bg-transparent border-b border-black"
+                        dangerouslySetInnerHTML={{
+                          __html:
+                            result
+                              .split(/【歌詞】/)[1]
+                              ?.replace(/【歌詞】|【Lyrics】/, "")
+                              .replace(/\n/g, "<br />") || "",
+                        }}
+                      />
+                    </div>
+                  </>
                 )}
               </>
             )}
