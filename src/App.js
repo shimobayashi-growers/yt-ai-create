@@ -50,6 +50,9 @@ function App() {
   const [mood, setMood] = useState("激しめ、ノリが良い"); // 曲の雰囲気のデフォルト値
   const [lyricsContent, setLyricsContent] = useState("筋トレが捗るような曲調"); // 歌詞の内容のデフォルト値
   const [keywords, setKeywords] = useState(""); // 含めて欲しい単語の状態
+  const [excludeKeywords, setExcludeKeywords] = useState(
+    "push,limit,rise,grind,power,rhythm,Unstoppable,feel,burn"
+  ); // 含めたくない単語の状態
   const [language, setLanguage] = useState("英語"); // 言語のデフォルト値
   const [result, setResult] = useState("");
   const [isLoading, setIsLoading] = useState(false);
@@ -74,6 +77,7 @@ function App() {
         ・曲及び歌詞の雰囲気：${mood}
         ・歌詞の内容：${lyricsContent}
         ・歌詞に含めて欲しい単語：${keywords}
+        ・歌詞に含めたくない単語：${excludeKeywords}
         ・言語：${language}
         ${content}`;
 
@@ -170,6 +174,13 @@ function App() {
               type="text"
               value={keywords} // デフォルト値を設定
               onChange={(e) => setKeywords(e.target.value)}
+              className="mt-1 p-2 w-full bg-transparent text-white border-b border-white"
+            />
+            <label className="mt-4 text-green-300">含めたくない単語</label>
+            <input
+              type="text"
+              value={excludeKeywords}
+              onChange={(e) => setExcludeKeywords(e.target.value)}
               className="mt-1 p-2 w-full bg-transparent text-white border-b border-white"
             />
             <label className="mt-4 text-green-300">言語</label>
